@@ -22,6 +22,13 @@ import asistenciamotor360.vista.componentes.Formulario;
 import asistenciamotor360.vista.componentes.ModeloCombo;
 import asistenciamotor360.vista.componentes.ModeloTabla;
 
+/**
+ * Panel de despacho de servicios. Permite asignar recursos a la siguiente
+ * solicitud, ejecutar el despacho automatico y cerrar los servicios activos.
+ *
+ * @author Grupo CC1 2026-3
+ * @version 1.0
+ */
 public class PanelDespacho extends JPanel implements PanelModulo {
 
     private static final long serialVersionUID = 1L;
@@ -34,6 +41,11 @@ public class PanelDespacho extends JPanel implements PanelModulo {
     private final JTable tabla;
     private Lista<Solicitud> activas;
 
+    /**
+     * Crea el panel de despacho.
+     *
+     * @param controlador controlador principal de la aplicacion.
+     */
     public PanelDespacho(ControladorPrincipal controlador) {
         this.controlador = controlador;
         this.activas = new Lista<Solicitud>();
@@ -120,6 +132,10 @@ public class PanelDespacho extends JPanel implements PanelModulo {
         return activas.obtener(fila);
     }
 
+    /**
+     * Actualiza la siguiente solicitud, los recursos disponibles y la tabla de
+     * rescates activos.
+     */
     @Override
     public void actualizar() {
         modeloUnidades.setElementos(controlador.listarUnidadesDisponibles());

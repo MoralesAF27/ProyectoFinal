@@ -19,6 +19,13 @@ import asistenciamotor360.modelo.estructuras.Lista;
 import asistenciamotor360.vista.componentes.Componentes;
 import asistenciamotor360.vista.componentes.ModeloTabla;
 
+/**
+ * Panel de reportes. Consolida las incidencias solucionadas en la jornada y
+ * genera el archivo plano CSV solicitado por la compania.
+ *
+ * @author Grupo CC1 2026-3
+ * @version 1.0
+ */
 public class PanelReportes extends JPanel implements PanelModulo {
 
     private static final long serialVersionUID = 1L;
@@ -27,6 +34,11 @@ public class PanelReportes extends JPanel implements PanelModulo {
     private final JLabel etiquetaReporte;
     private final ModeloTabla modeloTabla;
 
+    /**
+     * Crea el panel de reportes.
+     *
+     * @param controlador controlador principal de la aplicacion.
+     */
     public PanelReportes(ControladorPrincipal controlador) {
         this.controlador = controlador;
         setLayout(new BorderLayout(10, 10));
@@ -71,6 +83,9 @@ public class PanelReportes extends JPanel implements PanelModulo {
         }
     }
 
+    /**
+     * Actualiza la tabla de incidencias solucionadas.
+     */
     @Override
     public void actualizar() {
         Lista<Solicitud> solucionadas = controlador.listarServiciosSolucionados();

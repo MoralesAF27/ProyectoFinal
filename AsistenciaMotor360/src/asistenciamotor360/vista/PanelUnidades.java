@@ -24,6 +24,12 @@ import asistenciamotor360.vista.componentes.Formulario;
 import asistenciamotor360.vista.componentes.ModeloCombo;
 import asistenciamotor360.vista.componentes.ModeloTabla;
 
+/**
+ * Panel de administracion de la flota de unidades moviles.
+ *
+ * @author Grupo CC1 2026-3
+ * @version 1.0
+ */
 public class PanelUnidades extends JPanel implements PanelModulo {
 
     private static final long serialVersionUID = 1L;
@@ -37,6 +43,11 @@ public class PanelUnidades extends JPanel implements PanelModulo {
     private final ModeloCombo<EstadoUnidad> modeloEstado;
     private final ModeloTabla modeloTabla;
 
+    /**
+     * Crea el panel de unidades moviles.
+     *
+     * @param controlador controlador principal de la aplicacion.
+     */
     public PanelUnidades(ControladorPrincipal controlador) {
         this.controlador = controlador;
         setLayout(new BorderLayout(10, 10));
@@ -108,6 +119,9 @@ public class PanelUnidades extends JPanel implements PanelModulo {
         controlador.cambiarEstadoUnidad(unidad.getUuid(), modeloEstado.getSeleccionado());
     }
 
+    /**
+     * Actualiza el listado y los combos del panel.
+     */
     @Override
     public void actualizar() {
         Lista<UnidadMovil> unidades = controlador.listarUnidades();

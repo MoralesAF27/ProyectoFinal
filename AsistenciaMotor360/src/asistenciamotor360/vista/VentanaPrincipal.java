@@ -19,6 +19,13 @@ import javax.swing.JTabbedPane;
 import asistenciamotor360.controlador.ControladorPrincipal;
 import asistenciamotor360.modelo.estructuras.Lista;
 
+/**
+ * Ventana principal de la aplicacion. Organiza los modulos de la interfaz en
+ * pestanas y actua como vista del patron MVC.
+ *
+ * @author Grupo CC1 2026-3
+ * @version 1.0
+ */
 public class VentanaPrincipal extends JFrame {
 
     private static final long serialVersionUID = 1L;
@@ -27,6 +34,11 @@ public class VentanaPrincipal extends JFrame {
     private final Lista<PanelModulo> paneles;
     private final JLabel etiquetaEstado;
 
+    /**
+     * Crea la ventana principal con todos los modulos del sistema.
+     *
+     * @param controlador controlador principal de la aplicacion.
+     */
     public VentanaPrincipal(ControladorPrincipal controlador) {
         super("Asistencia Motor 360 | Centro de control de operaciones");
         this.controlador = controlador;
@@ -120,12 +132,20 @@ public class VentanaPrincipal extends JFrame {
         }
     }
 
+    /**
+     * Actualiza todos los paneles de la ventana.
+     */
     public void actualizarPaneles() {
         for (int i = 0; i < paneles.tamano(); i++) {
             paneles.obtener(i).actualizar();
         }
     }
 
+    /**
+     * Muestra un mensaje en la barra de estado de la ventana.
+     *
+     * @param texto mensaje que se desea presentar.
+     */
     public void mostrarMensaje(String texto) {
         etiquetaEstado.setText("  " + texto);
     }

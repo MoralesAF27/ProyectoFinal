@@ -21,6 +21,13 @@ import asistenciamotor360.modelo.estructuras.Lista;
 import asistenciamotor360.vista.componentes.Componentes;
 import asistenciamotor360.vista.componentes.ModeloLista;
 
+/**
+ * Panel del supervisor. Permite deshacer las ultimas transacciones y consultar
+ * el historial reciente de acciones del centro de control.
+ *
+ * @author Grupo CC1 2026-3
+ * @version 1.0
+ */
 public class PanelSupervisor extends JPanel implements PanelModulo {
 
     private static final long serialVersionUID = 1L;
@@ -31,6 +38,11 @@ public class PanelSupervisor extends JPanel implements PanelModulo {
     private final ModeloLista modeloTransacciones;
     private final JTextArea areaHistorial;
 
+    /**
+     * Crea el panel de supervision.
+     *
+     * @param controlador controlador principal de la aplicacion.
+     */
     public PanelSupervisor(ControladorPrincipal controlador) {
         this.controlador = controlador;
         setLayout(new BorderLayout(10, 10));
@@ -85,6 +97,9 @@ public class PanelSupervisor extends JPanel implements PanelModulo {
         }
     }
 
+    /**
+     * Actualiza la pila de transacciones y el historial de acciones.
+     */
     @Override
     public void actualizar() {
         Lista<Transaccion> transacciones = controlador.listarTransaccionesPendientes();

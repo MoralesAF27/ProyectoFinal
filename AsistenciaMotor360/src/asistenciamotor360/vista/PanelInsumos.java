@@ -7,13 +7,13 @@ import java.awt.GridLayout;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.JLabel;
 
 import asistenciamotor360.controlador.ControladorPrincipal;
 import asistenciamotor360.modelo.Maletin;
@@ -23,6 +23,13 @@ import asistenciamotor360.vista.componentes.Componentes;
 import asistenciamotor360.vista.componentes.Formulario;
 import asistenciamotor360.vista.componentes.ModeloLista;
 
+/**
+ * Panel de administracion de insumos. Gestiona los maletines de respuesta
+ * rapida y los repuestos de alta rotacion aplicando el principio LIFO.
+ *
+ * @author Grupo CC1 2026-3
+ * @version 1.0
+ */
 public class PanelInsumos extends JPanel implements PanelModulo {
 
     private static final long serialVersionUID = 1L;
@@ -41,6 +48,11 @@ public class PanelInsumos extends JPanel implements PanelModulo {
     private final JTextArea areaDespachados;
     private Lista<Maletin> enServicioActual;
 
+    /**
+     * Crea el panel de insumos.
+     *
+     * @param controlador controlador principal de la aplicacion.
+     */
     public PanelInsumos(ControladorPrincipal controlador) {
         this.controlador = controlador;
         this.enServicioActual = new Lista<Maletin>();
@@ -166,6 +178,9 @@ public class PanelInsumos extends JPanel implements PanelModulo {
         controlador.enviarMaletinAuditoria(enServicioActual.obtener(indice).getCodigo());
     }
 
+    /**
+     * Actualiza las pilas de maletines y de repuestos.
+     */
     @Override
     public void actualizar() {
         Lista<Maletin> disponibles = controlador.listarMaletinesDisponibles();
@@ -173,9 +188,7 @@ public class PanelInsumos extends JPanel implements PanelModulo {
         enServicioActual = controlador.listarMaletinesEnServicio();
 
         modeloDisponibles.setElementos(textosMaletines(disponibles));
-        modeloAuditoria.setElementos(textosMaletines(auditoria));
-
-        Lista<String> textosServicio = new Lista<String>();
+        modeloAuditoria.setElementos(textosMaletines(auditoria));        Lista<String> textosServicio = new Lista<String>();
         for (int i = 0; i < enServicioActual.tamano(); i++) {
             textosServicio.agregar(enServicioActual.obtener(i).toString());
         }

@@ -26,6 +26,13 @@ import asistenciamotor360.vista.componentes.Formulario;
 import asistenciamotor360.vista.componentes.ModeloCombo;
 import asistenciamotor360.vista.componentes.ModeloLista;
 
+/**
+ * Panel de recepcion de solicitudes de asistencia. Muestra la evaluacion de
+ * prioridad, las colas de atencion y la opcion de escalar casos criticos.
+ *
+ * @author Grupo CC1 2026-3
+ * @version 1.0
+ */
 public class PanelSolicitudes extends JPanel implements PanelModulo {
 
     private static final long serialVersionUID = 1L;
@@ -45,6 +52,11 @@ public class PanelSolicitudes extends JPanel implements PanelModulo {
     private final JLabel etiquetaSiguiente;
     private Lista<Solicitud> ordinariasActuales;
 
+    /**
+     * Crea el panel de solicitudes.
+     *
+     * @param controlador controlador principal de la aplicacion.
+     */
     public PanelSolicitudes(ControladorPrincipal controlador) {
         this.controlador = controlador;
         this.ordinariasActuales = new Lista<Solicitud>();
@@ -198,6 +210,9 @@ public class PanelSolicitudes extends JPanel implements PanelModulo {
         controlador.escalarSolicitud(ordinariasActuales.obtener(indice).getId());
     }
 
+    /**
+     * Actualiza los combos, las colas y el mensaje de siguiente atencion.
+     */
     @Override
     public void actualizar() {
         modeloClientes.setElementos(controlador.listarClientes());

@@ -9,39 +9,53 @@ import java.time.format.DateTimeFormatter;
 
 import asistenciamotor360.modelo.estructuras.Lista;
 
+/**
+ * Genera el reporte plano en formato CSV con las incidencias solucionadas
+ * durante la jornada. El archivo se escribe en UTF-8 con separador punto y coma
+ * para facilitar su apertura en hojas de calculo.
+ *
+ * @author Grupo CC1 2026-3
+ * @version 1.0
+ */
 public class ExportadorCSV {
 
     private static final String SEPARADOR = ";";
     private static final DateTimeFormatter FORMATO_FECHA = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     private static final DateTimeFormatter FORMATO_HORA = DateTimeFormatter.ofPattern("HH:mm:ss");
 
+    /**
+     * Constructor privado de la clase utilitaria.
+     */
     private ExportadorCSV() {
     }
 
+    /**
+     * Escribe el reporte CSV con las solicitudes solucionadas indicadas.
+     *
+     * @param solicitudes      solicitudes que se consolidaran en el reporte.
+     * @param rutaArchivo      ruta del archivo plano que se desea generar.
+     * @return cantidad de incidencias escritas en el reporte.
+     * @throws IOException si ocurre un error de escritura en el archivo.
+     */
     public static int exportar(Lista<Solicitud> solicitudes, String rutaArchivo)
             throws IOException {
         BufferedWriter escritor = null;
-
         try {
             escritor = new BufferedWriter(new OutputStreamWriter(
                     new FileOutputStream(rutaArchivo), StandardCharsets.UTF_8));
-
             escritor.write('\uFEFF');
             escritor.write(encabezado());
             escritor.newLine();
-
             for (int i = 0; i < solicitudes.tamano(); i++) {
                 escritor.write(linea(solicitudes.obtener(i)));
                 escritor.newLine();
             }
-
             escritor.flush();
         } finally {
             if (escritor != null) {
                 escritor.close();
             }
         }
-
         return solicitudes.tamano();
     }
 
@@ -73,33 +87,24 @@ public class ExportadorCSV {
     private static String linea(Solicitud solicitud) {
         String fechaRecepcion = solicitud.getFechaRecepcion() == null ? ""
                 : solicitud.getFechaRecepcion().format(FORMATO_FECHA);
-
         String horaRecepcion = solicitud.getFechaRecepcion() == null ? ""
                 : solicitud.getFechaRecepcion().format(FORMATO_HORA);
-
         String fechaSolucion = solicitud.getFechaSolucion() == null ? ""
                 : solicitud.getFechaSolucion().format(FORMATO_FECHA);
-
         String horaSolucion = solicitud.getFechaSolucion() == null ? ""
                 : solicitud.getFechaSolucion().format(FORMATO_HORA);
-
         String unidadUuid = solicitud.getUnidad() == null ? "" : solicitud.getUnidad().getUuid();
         String unidadCodigo = solicitud.getUnidad() == null ? ""
                 : solicitud.getUnidad().getCodigo();
-
         String unidadTipo = solicitud.getUnidad() == null ? ""
                 : solicitud.getUnidad().getTipo().getEtiqueta();
-
         String tecnicoNombre = solicitud.getTecnico() == null ? ""
                 : solicitud.getTecnico().getNombre();
-
         String tecnicoIdentificacion = solicitud.getTecnico() == null ? ""
                 : solicitud.getTecnico().getIdentificacion();
-
         String minutos = String.valueOf(minutosAtencion(solicitud));
 
         StringBuilder linea = new StringBuilder();
-
         linea.append(texto(solicitud.getId())).append(SEPARADOR);
         linea.append(texto(fechaRecepcion)).append(SEPARADOR);
         linea.append(texto(horaRecepcion)).append(SEPARADOR);
@@ -122,7 +127,6 @@ public class ExportadorCSV {
         linea.append(texto(tecnicoIdentificacion)).append(SEPARADOR);
         linea.append(minutos).append(SEPARADOR);
         linea.append(texto(solicitud.getDescripcion()));
-
         return linea.toString();
     }
 
@@ -130,7 +134,6 @@ public class ExportadorCSV {
         if (solicitud.getFechaRecepcion() == null || solicitud.getFechaSolucion() == null) {
             return 0;
         }
-
         return java.time.Duration.between(solicitud.getFechaRecepcion(),
                 solicitud.getFechaSolucion()).toMinutes();
     }

@@ -23,6 +23,12 @@ import asistenciamotor360.vista.componentes.Formulario;
 import asistenciamotor360.vista.componentes.ModeloCombo;
 import asistenciamotor360.vista.componentes.ModeloTabla;
 
+/**
+ * Panel de administracion del personal tecnico de la compania.
+ *
+ * @author Grupo CC1 2026-3
+ * @version 1.0
+ */
 public class PanelTecnicos extends JPanel implements PanelModulo {
 
     private static final long serialVersionUID = 1L;
@@ -36,6 +42,11 @@ public class PanelTecnicos extends JPanel implements PanelModulo {
     private final ModeloCombo<EstadoTecnico> modeloEstado;
     private final ModeloTabla modeloTabla;
 
+    /**
+     * Crea el panel de tecnicos.
+     *
+     * @param controlador controlador principal de la aplicacion.
+     */
     public PanelTecnicos(ControladorPrincipal controlador) {
         this.controlador = controlador;
         setLayout(new BorderLayout(10, 10));
@@ -105,6 +116,9 @@ public class PanelTecnicos extends JPanel implements PanelModulo {
                 modeloEstado.getSeleccionado());
     }
 
+    /**
+     * Actualiza el listado y los combos del panel.
+     */
     @Override
     public void actualizar() {
         Lista<Tecnico> tecnicos = controlador.listarTecnicos();

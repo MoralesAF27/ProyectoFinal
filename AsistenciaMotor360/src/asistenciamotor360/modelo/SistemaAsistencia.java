@@ -1,4 +1,3 @@
-
 package asistenciamotor360.modelo;
 
 import java.io.IOException;
@@ -12,6 +11,16 @@ import asistenciamotor360.modelo.estructuras.Lista;
 import asistenciamotor360.modelo.estructuras.Pila;
 import asistenciamotor360.modelo.estructuras.TablaHash;
 
+/**
+ * Fachada del modelo de negocio de Asistencia Motor 360. Concentra el registro
+ * de recursos, la administracion de las colas de solicitudes, el despacho de
+ * servicios, el control de insumos, el historial de acciones y el mecanismo de
+ * deshacer transacciones. Toda la informacion se almacena en estructuras de
+ * datos propias, sin utilizar el framework de colecciones de Java.
+ *
+ * @author Grupo CC1 2026-3
+ * @version 1.0
+ */
 public class SistemaAsistencia {
 
     private static final int UMBRAL_PRIORIDAD = 18;
@@ -41,6 +50,9 @@ public class SistemaAsistencia {
     private int consecutivoSolicitud;
     private int consecutivoTransaccion;
 
+    /**
+     * Crea el sistema con todas sus estructuras vacias.
+     */
     public SistemaAsistencia() {
         this.unidades = new TablaHash<String, UnidadMovil>();
         this.tecnicos = new TablaHash<String, Tecnico>();
@@ -70,6 +82,17 @@ public class SistemaAsistencia {
         this.consecutivoTransaccion = 0;
     }
 
+    /**
+     * Registra una unidad movil con un identificador universal unico.
+     *
+     * @param codigo         placa o codigo interno de la unidad.
+     * @param tipo           categoria de la unidad.
+     * @param zona           zona de operacion.
+     * @param disponibilidad nivel de disponibilidad.
+     * @return la unidad registrada.
+     * @throws ReglaNegocioExcepcion si los datos son invalidos o el codigo ya
+     *                               existe.
+     */
     public UnidadMovil registrarUnidad(String codigo, TipoUnidad tipo, ZonaOperacion zona,
             NivelDisponibilidad disponibilidad) {
         validarTexto(codigo, "El codigo de la unidad es obligatorio.");
@@ -93,6 +116,15 @@ public class SistemaAsistencia {
         return unidad;
     }
 
+    /**
+     * Cambia el estado operativo de una unidad movil que no tenga servicios
+     * activos.
+     *
+     * @param uuid         identificador universal de la unidad.
+     * @param nuevoEstado  estado que se desea asignar.
+     * @throws ReglaNegocioExcepcion si la unidad no existe, tiene un servicio
+     *                               activo o se intenta asignar directamente.
+     */
     public void cambiarEstadoUnidad(String uuid, EstadoUnidad nuevoEstado) {
         UnidadMovil unidad = obtenerUnidad(uuid);
         if (nuevoEstado == null) {
@@ -120,6 +152,17 @@ public class SistemaAsistencia {
                 });
     }
 
+    /**
+     * Registra un tecnico con su area de especialidad y sector de patrullaje.
+     *
+     * @param identificacion documento o codigo del tecnico.
+     * @param nombre         nombre completo del tecnico.
+     * @param especialidad   area de especialidad.
+     * @param sector         sector de patrullaje.
+     * @return el tecnico registrado.
+     * @throws ReglaNegocioExcepcion si los datos son invalidos o la
+     *                               identificacion ya existe.
+     */
     public Tecnico registrarTecnico(String identificacion, String nombre,
             Especialidad especialidad, ZonaOperacion sector) {
         validarTexto(identificacion, "La identificacion del tecnico es obligatoria.");
@@ -145,6 +188,15 @@ public class SistemaAsistencia {
         return tecnico;
     }
 
+    /**
+     * Cambia el estado de un tecnico que no tenga un servicio activo.
+     *
+     * @param identificacion identificacion del tecnico.
+     * @param nuevoEstado    nuevo estado vigente.
+     * @throws ReglaNegocioExcepcion si el tecnico no existe, tiene servicio
+     *                               activo o se intenta marcar en atencion sin
+     *                               despacho.
+     */
     public void cambiarEstadoTecnico(String identificacion, EstadoTecnico nuevoEstado) {
         Tecnico tecnico = obtenerTecnico(identificacion);
         if (nuevoEstado == null) {
@@ -171,6 +223,18 @@ public class SistemaAsistencia {
                 });
     }
 
+    /**
+     * Registra un cliente de la compania.
+     *
+     * @param identificacion documento o NIT del cliente.
+     * @param nombre         nombre o razon social.
+     * @param tipo           perfil del cliente.
+     * @param telefono       telefono de contacto.
+     * @param direccion      direccion principal.
+     * @return el cliente registrado.
+     * @throws ReglaNegocioExcepcion si los datos son invalidos o la
+     *                               identificacion ya existe.
+     */
     public Cliente registrarCliente(String identificacion, String nombre, TipoCliente tipo,
             String telefono, String direccion) {
         validarTexto(identificacion, "La identificacion del cliente es obligatoria.");
@@ -196,6 +260,16 @@ public class SistemaAsistencia {
         return cliente;
     }
 
+    /**
+     * Calcula el puntaje de prioridad de una solicitud a partir de los factores
+     * definidos en las politicas de la compania.
+     *
+     * @param nivelRiesgo    nivel de peligro entre uno y cinco.
+     * @param afectacionVial congestion vehicular entre uno y cinco.
+     * @param severidad      gravedad de la averia entre uno y cinco.
+     * @param tipoCliente    perfil del cliente.
+     * @return puntaje entre cero y cincuenta.
+     */
     public int calcularPuntaje(int nivelRiesgo, int afectacionVial, int severidad,
             TipoCliente tipoCliente) {
         if (tipoCliente == null) {
@@ -206,10 +280,26 @@ public class SistemaAsistencia {
         return Math.min(PUNTAJE_MAXIMO, puntaje);
     }
 
+    /**
+     * Indica si una solicitud debe ubicarse en la cola prioritaria.
+     *
+     * @param puntaje     puntaje calculado de prioridad.
+     * @param tipoCliente perfil del cliente.
+     * @return verdadero si alcanza el umbral o pertenece a un servicio publico.
+     */
     public boolean requiereAtencionPrioritaria(int puntaje, TipoCliente tipoCliente) {
         return puntaje >= UMBRAL_PRIORIDAD || TipoCliente.SERVICIO_PUBLICO.equals(tipoCliente);
     }
 
+    /**
+     * Describe los factores que determinan el puntaje de prioridad.
+     *
+     * @param nivelRiesgo    nivel de peligro entre uno y cinco.
+     * @param afectacionVial congestion vehicular entre uno y cinco.
+     * @param severidad      gravedad de la averia entre uno y cinco.
+     * @param tipoCliente    perfil del cliente.
+     * @return texto explicativo del calculo realizado.
+     */
     public String describirPrioridad(int nivelRiesgo, int afectacionVial, int severidad,
             TipoCliente tipoCliente) {
         if (tipoCliente == null) {
@@ -225,6 +315,21 @@ public class SistemaAsistencia {
                 + " -> " + clasificacion;
     }
 
+    /**
+     * Registra una solicitud de asistencia vinculada obligatoriamente a un
+     * cliente y la ubica en la cola que corresponde.
+     *
+     * @param identificacionCliente identificacion del cliente que reporta.
+     * @param tipoIncidente         tipo de incidente.
+     * @param zona                  zona donde ocurre el incidente.
+     * @param nivelRiesgo           nivel de peligro entre uno y cinco.
+     * @param afectacionVial        congestion vehicular entre uno y cinco.
+     * @param severidad             gravedad de la averia entre uno y cinco.
+     * @param descripcion           detalle del incidente.
+     * @return la solicitud registrada.
+     * @throws ReglaNegocioExcepcion si el cliente no existe o los valores estan
+     *                               fuera de rango.
+     */
     public Solicitud crearSolicitud(String identificacionCliente, TipoIncidente tipoIncidente,
             ZonaOperacion zona, int nivelRiesgo, int afectacionVial, int severidad,
             String descripcion) {
@@ -272,6 +377,13 @@ public class SistemaAsistencia {
         return solicitud;
     }
 
+    /**
+     * Escala una solicitud pendiente al flujo de atencion prioritaria.
+     *
+     * @param idSolicitud identificador de la solicitud.
+     * @throws ReglaNegocioExcepcion si la solicitud no existe, ya fue atendida o
+     *                               ya es prioritaria.
+     */
     public void escalarSolicitud(String idSolicitud) {
         Solicitud solicitud = obtenerSolicitud(idSolicitud);
         if (solicitud.getEstado() != EstadoSolicitud.PENDIENTE) {
@@ -306,6 +418,13 @@ public class SistemaAsistencia {
         });
     }
 
+    /**
+     * Retorna la solicitud que debe atenderse a continuacion: la de mayor
+     * prioridad si existen casos criticos, o la primera en llegar entre las
+     * ordinarias.
+     *
+     * @return siguiente solicitud pendiente o nula si no hay solicitudes.
+     */
     public Solicitud solicitudSiguiente() {
         if (!colaPrioritaria.estaVacia()) {
             return colaPrioritaria.mirar();
@@ -316,6 +435,16 @@ public class SistemaAsistencia {
         return null;
     }
 
+    /**
+     * Asigna una unidad movil y un tecnico a la solicitud que ocupa el primer
+     * lugar en el flujo de atencion.
+     *
+     * @param idSolicitud identificador de la solicitud.
+     * @param uuidUnidad  identificador universal de la unidad.
+     * @param idTecnico   identificacion del tecnico.
+     * @return la solicitud despachada.
+     * @throws ReglaNegocioExcepcion si se incumple alguna regla de negocio.
+     */
     public Solicitud despachar(String idSolicitud, String uuidUnidad, String idTecnico) {
         Solicitud solicitud = obtenerSolicitud(idSolicitud);
         if (solicitud.getEstado() != EstadoSolicitud.PENDIENTE) {
@@ -379,6 +508,14 @@ public class SistemaAsistencia {
         return solicitud;
     }
 
+    /**
+     * Despacha automaticamente la siguiente solicitud pendiente con la mejor
+     * unidad y el tecnico mas adecuado disponibles.
+     *
+     * @return la solicitud despachada.
+     * @throws ReglaNegocioExcepcion si no hay solicitudes pendientes o recursos
+     *                               disponibles.
+     */
     public Solicitud despachoAutomatico() {
         Solicitud solicitud = solicitudSiguiente();
         if (solicitud == null) {
@@ -395,6 +532,13 @@ public class SistemaAsistencia {
         return despachar(solicitud.getId(), unidad.getUuid(), tecnico.getIdentificacion());
     }
 
+    /**
+     * Marca una solicitud como atendida, exigiendo que tenga recursos
+     * asignados.
+     *
+     * @param idSolicitud identificador de la solicitud.
+     * @throws ReglaNegocioExcepcion si la solicitud no tiene recursos asignados.
+     */
     public void marcarAtendida(String idSolicitud) {
         Solicitud solicitud = obtenerSolicitud(idSolicitud);
         if (!solicitud.tieneRecursosAsignados()) {
@@ -416,6 +560,14 @@ public class SistemaAsistencia {
         });
     }
 
+    /**
+     * Marca una solicitud como solucionada, retira el servicio del flujo activo
+     * y libera la unidad y el tecnico asignados.
+     *
+     * @param idSolicitud identificador de la solicitud.
+     * @throws ReglaNegocioExcepcion si la solicitud no tiene recursos asignados
+     *                               o ya fue solucionada.
+     */
     public void solucionarSolicitud(String idSolicitud) {
         Solicitud solicitud = obtenerSolicitud(idSolicitud);
         if (!solicitud.tieneRecursosAsignados()) {
@@ -455,6 +607,13 @@ public class SistemaAsistencia {
         });
     }
 
+    /**
+     * Deshace la ultima transaccion registrada, restaurando el estado anterior
+     * del sistema.
+     *
+     * @return la transaccion que fue deshecha.
+     * @throws ReglaNegocioExcepcion si no hay transacciones por deshacer.
+     */
     public Transaccion deshacerUltimaTransaccion() {
         if (transacciones.estaVacia()) {
             throw new ReglaNegocioExcepcion("No hay transacciones pendientes por deshacer.");
@@ -466,6 +625,15 @@ public class SistemaAsistencia {
         return transaccion;
     }
 
+    /**
+     * Registra un maletin de respuesta rapida en la estanteria de disponibles.
+     *
+     * @param codigo    codigo unico del maletin.
+     * @param contenido contenido inicial del maletin.
+     * @return el maletin registrado.
+     * @throws ReglaNegocioExcepcion si los datos son invalidos o el codigo ya
+     *                               existe.
+     */
     public Maletin registrarMaletin(String codigo, String contenido) {
         validarTexto(codigo, "El codigo del maletin es obligatorio.");
         validarTexto(contenido, "El contenido del maletin es obligatorio.");
@@ -486,6 +654,12 @@ public class SistemaAsistencia {
         return maletin;
     }
 
+    /**
+     * Extrae el ultimo maletin apilado y lo entrega para un servicio.
+     *
+     * @return maletin despachado.
+     * @throws ReglaNegocioExcepcion si no hay maletines disponibles.
+     */
     public Maletin despacharMaletin() {
         if (maletinesDisponibles.estaVacia()) {
             throw new ReglaNegocioExcepcion("No hay maletines disponibles en la estanteria.");
@@ -505,6 +679,12 @@ public class SistemaAsistencia {
         return maletin;
     }
 
+    /**
+     * Envia un maletin utilizado a la estacion de auditoria.
+     *
+     * @param codigo codigo del maletin que finaliza el servicio.
+     * @throws ReglaNegocioExcepcion si el maletin no esta en servicio.
+     */
     public void enviarMaletinAuditoria(String codigo) {
         Maletin maletin = buscarMaletinEnServicio(codigo);
         if (maletin == null) {
@@ -526,6 +706,14 @@ public class SistemaAsistencia {
                 });
     }
 
+    /**
+     * Audita el maletin ubicado en la cima de la estacion de auditoria.
+     *
+     * @param aprobado verdadero si el contenido esta completo y el maletin se
+     *                 reincorpora a la estanteria.
+     * @return maletin auditado.
+     * @throws ReglaNegocioExcepcion si no hay maletines en auditoria.
+     */
     public Maletin auditarMaletin(boolean aprobado) {
         if (maletinesAuditoria.estaVacia()) {
             throw new ReglaNegocioExcepcion("No hay maletines pendientes de auditoria.");
@@ -552,6 +740,15 @@ public class SistemaAsistencia {
         return maletin;
     }
 
+    /**
+     * Apila una pieza de repuesto de alta rotacion.
+     *
+     * @param codigo codigo de la pieza.
+     * @param nombre nombre o descripcion de la pieza.
+     * @return la pieza apilada.
+     * @throws ReglaNegocioExcepcion si los datos son invalidos o el codigo ya
+     *                               existe.
+     */
     public Repuesto apilarRepuesto(String codigo, String nombre) {
         validarTexto(codigo, "El codigo del repuesto es obligatorio.");
         validarTexto(nombre, "El nombre del repuesto es obligatorio.");
@@ -574,6 +771,12 @@ public class SistemaAsistencia {
         return repuesto;
     }
 
+    /**
+     * Despacha la ultima pieza apilada en el almacen de alta rotacion.
+     *
+     * @return pieza despachada.
+     * @throws ReglaNegocioExcepcion si no hay repuestos disponibles.
+     */
     public Repuesto despacharRepuesto() {
         if (repuestosDisponibles.estaVacia()) {
             throw new ReglaNegocioExcepcion("No hay repuestos disponibles en el almacen.");
@@ -594,6 +797,14 @@ public class SistemaAsistencia {
         return repuesto;
     }
 
+    /**
+     * Exporta el reporte CSV con las incidencias solucionadas durante la
+     * jornada actual.
+     *
+     * @param rutaArchivo ruta del archivo plano que se desea generar.
+     * @return cantidad de incidencias consolidadas.
+     * @throws IOException si ocurre un error de escritura.
+     */
     public int exportarReporteCSV(String rutaArchivo) throws IOException {
         Lista<Solicitud> delDia = new Lista<Solicitud>();
         LocalDate hoy = LocalDate.now();
@@ -610,6 +821,9 @@ public class SistemaAsistencia {
         return total;
     }
 
+    /**
+     * Carga un conjunto de datos de demostracion para la sustentacion.
+     */
     public void cargarDatosDemostracion() {
         if (!unidades.estaVacia() || !tecnicos.estaVacia()) {
             throw new ReglaNegocioExcepcion(
@@ -659,6 +873,11 @@ public class SistemaAsistencia {
         apilarRepuesto("REP-003", "Bomba de combustible");
     }
 
+    /**
+     * Retorna todas las unidades registradas, ordenadas por codigo.
+     *
+     * @return lista de unidades.
+     */
     public Lista<UnidadMovil> listarUnidades() {
         Lista<UnidadMovil> lista = unidades.valores();
         lista.ordenar(new Comparador<UnidadMovil>() {
@@ -670,6 +889,11 @@ public class SistemaAsistencia {
         return lista;
     }
 
+    /**
+     * Retorna las unidades disponibles, ordenadas por nivel de disponibilidad.
+     *
+     * @return lista de unidades disponibles.
+     */
     public Lista<UnidadMovil> listarUnidadesDisponibles() {
         Lista<UnidadMovil> lista = new Lista<UnidadMovil>();
         Lista<UnidadMovil> todas = listarUnidades();
@@ -688,6 +912,12 @@ public class SistemaAsistencia {
         return lista;
     }
 
+    /**
+     * Retorna todas las unidades que se encuentran en un estado determinado.
+     *
+     * @param estado estado consultado.
+     * @return lista de unidades que cumplen el estado.
+     */
     public Lista<UnidadMovil> listarUnidadesPorEstado(EstadoUnidad estado) {
         Lista<UnidadMovil> lista = new Lista<UnidadMovil>();
         Lista<UnidadMovil> todas = listarUnidades();
@@ -699,6 +929,11 @@ public class SistemaAsistencia {
         return lista;
     }
 
+    /**
+     * Retorna todas las unidades en taller o mantenimiento.
+     *
+     * @return lista de unidades fuera de operacion.
+     */
     public Lista<UnidadMovil> listarUnidadesEnTaller() {
         Lista<UnidadMovil> lista = new Lista<UnidadMovil>();
         Lista<UnidadMovil> todas = listarUnidades();
@@ -711,6 +946,11 @@ public class SistemaAsistencia {
         return lista;
     }
 
+    /**
+     * Retorna todos los tecnicos registrados, ordenados por nombre.
+     *
+     * @return lista de tecnicos.
+     */
     public Lista<Tecnico> listarTecnicos() {
         Lista<Tecnico> lista = tecnicos.valores();
         lista.ordenar(new Comparador<Tecnico>() {
@@ -722,6 +962,11 @@ public class SistemaAsistencia {
         return lista;
     }
 
+    /**
+     * Retorna los tecnicos disponibles para un nuevo despacho.
+     *
+     * @return lista de tecnicos disponibles.
+     */
     public Lista<Tecnico> listarTecnicosDisponibles() {
         Lista<Tecnico> lista = new Lista<Tecnico>();
         Lista<Tecnico> todos = listarTecnicos();
@@ -733,66 +978,151 @@ public class SistemaAsistencia {
         return lista;
     }
 
+    /**
+     * Retorna todos los clientes registrados.
+     *
+     * @return lista de clientes.
+     */
     public Lista<Cliente> listarClientes() {
         return clientes.valores();
     }
 
+    /**
+     * Retorna las solicitudes ordinarias pendientes en estricto orden de
+     * llegada.
+     *
+     * @return lista de solicitudes ordinarias.
+     */
     public Lista<Solicitud> listarColaOrdinaria() {
         return colaOrdinaria.listar();
     }
 
+    /**
+     * Retorna las solicitudes prioritarias pendientes en orden de atencion.
+     *
+     * @return lista de solicitudes prioritarias.
+     */
     public Lista<Solicitud> listarColaPrioritaria() {
         return colaPrioritaria.listar();
     }
 
+    /**
+     * Retorna los servicios que se encuentran activos.
+     *
+     * @return lista de servicios activos.
+     */
     public Lista<Solicitud> listarServiciosActivos() {
         return serviciosActivos.copia();
     }
 
+    /**
+     * Retorna las incidencias solucionadas durante la jornada.
+     *
+     * @return lista de servicios solucionados.
+     */
     public Lista<Solicitud> listarServiciosSolucionados() {
         return serviciosSolucionados.copia();
     }
 
+    /**
+     * Retorna los maletines disponibles en la estanteria, de la cima a la base.
+     *
+     * @return lista de maletines disponibles.
+     */
     public Lista<Maletin> listarMaletinesDisponibles() {
         return maletinesDisponibles.listar();
     }
 
+    /**
+     * Retorna los maletines pendientes de auditoria, de la cima a la base.
+     *
+     * @return lista de maletines en auditoria.
+     */
     public Lista<Maletin> listarMaletinesAuditoria() {
         return maletinesAuditoria.listar();
     }
 
+    /**
+     * Retorna los maletines que se encuentran en servicio.
+     *
+     * @return lista de maletines en servicio.
+     */
     public Lista<Maletin> listarMaletinesEnServicio() {
         return maletinesEnServicio.copia();
     }
 
+    /**
+     * Retorna los maletines rechazados en auditoria.
+     *
+     * @return lista de maletines descartados.
+     */
     public Lista<Maletin> listarMaletinesDescartados() {
         return maletinesDescartados.copia();
     }
 
+    /**
+     * Retorna los repuestos disponibles, de la cima a la base de la pila.
+     *
+     * @return lista de repuestos apilados.
+     */
     public Lista<Repuesto> listarRepuestos() {
         return repuestosDisponibles.listar();
     }
 
+    /**
+     * Retorna las piezas de repuesto despachadas durante la jornada.
+     *
+     * @return lista de repuestos despachados.
+     */
     public Lista<Repuesto> listarRepuestosDespachados() {
         return repuestosDespachados.copia();
     }
 
+    /**
+     * Retorna el historial reciente de acciones, de la mas reciente a la mas
+     * antigua.
+     *
+     * @return lista de registros de auditoria.
+     */
     public Lista<RegistroAccion> listarHistorial() {
         return historial.copia();
     }
 
+    /**
+     * Retorna las transacciones pendientes de deshacer, de la mas reciente a la
+     * mas antigua.
+     *
+     * @return lista de transacciones.
+     */
     public Lista<Transaccion> listarTransaccionesPendientes() {
         return transacciones.listar();
     }
 
+    /**
+     * Retorna la cantidad de transacciones pendientes de deshacer.
+     *
+     * @return cantidad de transacciones.
+     */
     public int contarTransaccionesPendientes() {
         return transacciones.tamano();
     }
 
+    /**
+     * Retorna la cantidad de unidades en un estado determinado.
+     *
+     * @param estado estado consultado.
+     * @return cantidad de unidades.
+     */
     public int contarUnidades(EstadoUnidad estado) {
         return listarUnidadesPorEstado(estado).tamano();
     }
 
+    /**
+     * Retorna la cantidad de tecnicos en un estado determinado.
+     *
+     * @param estado estado consultado.
+     * @return cantidad de tecnicos.
+     */
     public int contarTecnicos(EstadoTecnico estado) {
         int total = 0;
         Lista<Tecnico> lista = listarTecnicos();
@@ -804,6 +1134,13 @@ public class SistemaAsistencia {
         return total;
     }
 
+    /**
+     * Busca una solicitud por su identificador.
+     *
+     * @param idSolicitud identificador de la solicitud.
+     * @return la solicitud encontrada.
+     * @throws ReglaNegocioExcepcion si la solicitud no existe.
+     */
     public Solicitud obtenerSolicitud(String idSolicitud) {
         Solicitud solicitud = solicitudes.obtener(idSolicitud);
         if (solicitud == null) {
@@ -813,6 +1150,13 @@ public class SistemaAsistencia {
         return solicitud;
     }
 
+    /**
+     * Busca una unidad por su identificador universal.
+     *
+     * @param uuid identificador universal de la unidad.
+     * @return la unidad encontrada.
+     * @throws ReglaNegocioExcepcion si la unidad no existe.
+     */
     public UnidadMovil obtenerUnidad(String uuid) {
         UnidadMovil unidad = unidades.obtener(uuid);
         if (unidad == null) {
@@ -821,6 +1165,13 @@ public class SistemaAsistencia {
         return unidad;
     }
 
+    /**
+     * Busca un tecnico por su identificacion.
+     *
+     * @param identificacion identificacion del tecnico.
+     * @return el tecnico encontrado.
+     * @throws ReglaNegocioExcepcion si el tecnico no existe.
+     */
     public Tecnico obtenerTecnico(String identificacion) {
         Tecnico tecnico = tecnicos.obtener(identificacion);
         if (tecnico == null) {
@@ -1035,6 +1386,12 @@ public class SistemaAsistencia {
         }
     }
 
+    /**
+     * Fotografia del estado de los insumos usada para deshacer operaciones.
+     *
+     * @author Grupo CC1 2026-3
+     * @version 1.0
+     */
     private static class FotoInsumos {
 
         private Lista<Maletin> disponibles;

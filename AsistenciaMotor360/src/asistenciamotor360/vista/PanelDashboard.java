@@ -8,6 +8,7 @@ import java.awt.GridLayout;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingConstants;
 
@@ -19,6 +20,13 @@ import asistenciamotor360.modelo.Solicitud;
 import asistenciamotor360.modelo.estructuras.Lista;
 import asistenciamotor360.vista.componentes.Componentes;
 
+/**
+ * Panel de control que resume en tiempo real el estado de la operacion:
+ * recursos, colas de atencion, rescates activos e historial reciente.
+ *
+ * @author Grupo CC1 2026-3
+ * @version 1.0
+ */
 public class PanelDashboard extends JPanel implements PanelModulo {
 
     private static final long serialVersionUID = 1L;
@@ -43,6 +51,11 @@ public class PanelDashboard extends JPanel implements PanelModulo {
     private final JTextArea areaActivos;
     private final JTextArea areaHistorial;
 
+    /**
+     * Crea el panel de control con sus indicadores y listados.
+     *
+     * @param controlador controlador principal de la aplicacion.
+     */
     public PanelDashboard(ControladorPrincipal controlador) {
         this.controlador = controlador;
         this.valores = new JLabel[TITULOS.length];
@@ -95,6 +108,9 @@ public class PanelDashboard extends JPanel implements PanelModulo {
         return area;
     }
 
+    /**
+     * Actualiza los indicadores y listados del panel.
+     */
     @Override
     public void actualizar() {
         valores[0].setText(String.valueOf(controlador.contarUnidades(EstadoUnidad.DISPONIBLE)));
@@ -158,6 +174,11 @@ public class PanelDashboard extends JPanel implements PanelModulo {
         areaHistorial.setCaretPosition(0);
     }
 
+    /**
+     * Retorna el tamano preferido del panel.
+     *
+     * @return dimension preferida.
+     */
     @Override
     public Dimension getPreferredSize() {
         return new Dimension(1200, 720);
