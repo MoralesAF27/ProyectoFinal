@@ -1,0 +1,1 @@
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"asistenciamotor360.app"},{"l":"asistenciamotor360.controlador"},{"l":"asistenciamotor360.modelo"},{"l":"asistenciamotor360.modelo.estructuras"},{"l":"asistenciamotor360.vista"},{"l":"asistenciamotor360.vista.componentes"}];updateSearchResults();

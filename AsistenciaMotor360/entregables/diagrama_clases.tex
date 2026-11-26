@@ -1,0 +1,287 @@
+\noindent{\Large\bfseries Diagrama de clases del sistema Asistencia Motor 360}\\[0.1cm]
+{\small Arquitectura Modelo--Vista--Controlador y estructuras de datos propias}\\[0.2cm]
+
+\begin{tikzpicture}[x=1cm,y=1cm,scale=0.90,transform shape,
+  clase/.style={draw=black!75,fill=white,rounded corners=1.5pt,align=left,
+    font=\fontsize{5.15}{6.3}\selectfont,inner sep=2.5pt},
+  iface/.style={clase,draw=blue!65,fill=blue!5},
+  paquete/.style={draw=azulUD!55,dashed,fill=azulUD!4,rounded corners=4pt},
+  etiquetaPaquete/.style={font=\fontsize{7}{8}\selectfont\bfseries,text=azulUD},
+  rel/.style={-{Latex[length=1.5mm,width=1.2mm]},draw=black!70,semithick},
+  dep/.style={-{Latex[length=1.5mm,width=1.2mm]},draw=black!60,dashed},
+  comp/.style={-{Diamond[length=2mm,width=1.3mm]},draw=black!70,semithick},
+  here/.style={font=\fontsize{5}{6}\selectfont,fill=white,inner sep=1pt,text=black!75}
+]
+
+% ============================ BANDAS ============================
+\draw[paquete] (0.25,11.55) rectangle (27.25,18.55);
+\node[etiquetaPaquete,anchor=south west] at (0.35,18.57) {VISTA (MVC)};
+\draw[paquete] (0.25,9.15) rectangle (27.25,11.45);
+\node[etiquetaPaquete,anchor=south west] at (0.35,11.47) {CONTROLADOR};
+\draw[paquete] (0.25,2.50) rectangle (27.25,9.05);
+\node[etiquetaPaquete,anchor=south west] at (0.35,9.07) {MODELO DEL DOMINIO};
+\draw[paquete] (0.25,0.10) rectangle (27.25,2.40);
+\node[etiquetaPaquete,anchor=north east] at (27.15,2.32) {ESTRUCTURAS DE DATOS PROPIAS};
+
+% ============================ VISTA ============================
+\node[iface,text width=3.0cm] (panelModulo) at (3.1,17.15) {%
+\textbf{PanelModulo}\\[-1pt]
+{\fontsize{4.8}{5.6}\selectfont \textit{«interface»}}\\
+\rule{\linewidth}{0.25pt}\\
++ actualizar()};
+
+\node[clase,text width=4.05cm] (ventana) at (3.6,14.55) {%
+\textbf{VentanaPrincipal}\\
+\rule{\linewidth}{0.25pt}\\
+-- paneles: Lista<PanelModulo>\\
+-- etiquetaEstado: JLabel\\
+\rule{\linewidth}{0.25pt}\\
++ actualizarPaneles()\\
++ mostrarMensaje(String)};
+
+\node[clase,text width=9.4cm] (paneles) at (14.1,16.35) {%
+\textbf{Paneles de la interfaz} \textit{«vista»}\\
+\rule{\linewidth}{0.25pt}\\
+\begin{tabular}{@{}l@{\hspace{0.35cm}}l@{}}
+PanelDashboard & PanelSolicitudes\\
+PanelUnidades & PanelDespacho\\
+PanelTecnicos & PanelInsumos\\
+PanelClientes & PanelSupervisor\\
+ & PanelReportes\\
+\end{tabular}\\
+\rule{\linewidth}{0.25pt}\\
++ actualizar() \hspace{0.2cm} \textit{implementan PanelModulo}};
+
+\node[clase,text width=3.4cm] (modeloTabla) at (10.45,12.75) {%
+\textbf{ModeloTabla}\\
+{\fontsize{4.5}{5.4}\selectfont \textit{extends AbstractTableModel}}\\
+\rule{\linewidth}{0.25pt}\\
+-- filas: Lista<String[]>\\
++ getValueAt(int,int)\\
++ setFilas(Lista<String[]>)};
+
+\node[clase,text width=3.5cm] (modeloCombo) at (14.25,12.75) {%
+\textbf{ModeloCombo<T>}\\
+{\fontsize{4.5}{5.4}\selectfont \textit{implements ComboBoxModel<T>}}\\
+\rule{\linewidth}{0.25pt}\\
+-- elementos: Lista<T>\\
++ setElementos(Lista<T>)\\
++ getSeleccionado(): T};
+
+\node[clase,text width=3.65cm] (modeloLista) at (18.25,12.75) {%
+\textbf{ModeloLista}\\
+{\fontsize{4.5}{5.4}\selectfont \textit{extends AbstractListModel}}\\
+\rule{\linewidth}{0.25pt}\\
+-- elementos: Lista<String>\\
++ setElementos(Lista<String>)\\
++ getElementAt(int)};
+
+% ======================= CONTROLADOR ===========================
+\node[clase,text width=11.6cm] (controlador) at (13.6,10.30) {%
+\textbf{ControladorPrincipal} \textit{«controlador»}\\
+\rule{\linewidth}{0.25pt}\\
+-- sistema: SistemaAsistencia \hspace{0.4cm} -- vista: VentanaPrincipal\\
+\rule{\linewidth}{0.25pt}\\
++ registrarUnidad(...) \hspace{0.2cm} + registrarTecnico(...) \hspace{0.2cm} + registrarCliente(...)\\
++ registrarSolicitud(...) \hspace{0.2cm} + escalarSolicitud(String) \hspace{0.2cm} + despacharSiguiente(...)\\
++ despachoAutomatico() \hspace{0.2cm} + marcarAtendida(String) \hspace{0.2cm} + solucionarSolicitud(String)\\
++ deshacerUltimaTransaccion() \hspace{0.2cm} + exportarCSV(String) \hspace{0.2cm} + actualizarPaneles()};
+
+% ============================ MODELO ===========================
+\node[clase,text width=12.2cm] (sistema) at (14.5,7.65) {%
+\textbf{SistemaAsistencia} \textit{«fachada del modelo»}\\
+\rule{\linewidth}{0.25pt}\\
+-- unidades, tecnicos, clientes, solicitudes: TablaHash\\
+-- colaOrdinaria: Cola<Solicitud> \hspace{0.25cm} -- colaPrioritaria: ColaPrioridad<Solicitud>\\
+-- serviciosActivos, serviciosSolucionados, historial: Lista\\
+-- maletinesDisponibles, maletinesAuditoria, repuestos, transacciones: Pila\\
+\rule{\linewidth}{0.25pt}\\
++ registrarUnidad(...) \hspace{0.15cm} + crearSolicitud(...) \hspace{0.15cm} + calcularPuntaje(...)\\
++ despachar(...) \hspace{0.15cm} + marcarAtendida(String) \hspace{0.15cm} + solucionarSolicitud(String)\\
++ deshacerUltimaTransaccion(): Transaccion \hspace{0.15cm} + exportarReporteCSV(String): int};
+
+\node[clase,text width=4.3cm] (enums) at (24.2,7.95) {%
+\textbf{Enumeraciones}\\
+\rule{\linewidth}{0.25pt}\\
+TipoUnidad, EstadoUnidad,\\
+NivelDisponibilidad,\\
+ZonaOperacion, Especialidad,\\
+EstadoTecnico, TipoCliente,\\
+TipoIncidente, EstadoSolicitud,\\
+EstadoMaletin};
+
+% ---- Entidades del dominio (fila inferior del modelo) ----
+\node[clase,text width=2.45cm] (cliente) at (1.75,4.18) {%
+\textbf{Cliente}\\
+\rule{\linewidth}{0.25pt}\\
+-- identificacion\\
+-- nombre\\
+-- tipo: TipoCliente\\
+-- telefono\\
+-- direccion};
+
+\node[clase,text width=2.45cm] (unidad) at (4.45,4.18) {%
+\textbf{UnidadMovil}\\
+\rule{\linewidth}{0.25pt}\\
+-- uuid: String\\
+-- codigo: String\\
+-- tipo: TipoUnidad\\
+-- estado:\\
+\hspace*{0.3cm}EstadoUnidad\\
+-- zona, disponibilidad};
+
+\node[clase,text width=2.45cm] (tecnico) at (7.15,4.18) {%
+\textbf{Tecnico}\\
+\rule{\linewidth}{0.25pt}\\
+-- identificacion\\
+-- nombre\\
+-- especialidad\\
+-- estado, sector\\
+-- idServicioActivo};
+
+\node[clase,text width=3.35cm] (solicitud) at (10.35,4.18) {%
+\textbf{Solicitud}\\
+\rule{\linewidth}{0.25pt}\\
+-- id: String\\
+-- cliente: Cliente\\
+-- unidad: UnidadMovil\\
+-- tecnico: Tecnico\\
+-- tipoIncidente, zona\\
+-- riesgo, afectacionVial\\
+-- severidad\\
+-- puntajePrioridad\\
+-- prioritaria: boolean\\
+-- estado: EstadoSolicitud\\
+\rule{\linewidth}{0.25pt}\\
++ marcarAtendida()\\
++ marcarSolucionada()};
+
+\node[clase,text width=2.45cm] (maletin) at (13.85,4.18) {%
+\textbf{Maletin}\\
+\rule{\linewidth}{0.25pt}\\
+-- codigo\\
+-- contenido\\
+-- estado:\\
+\hspace*{0.3cm}EstadoMaletin};
+
+\node[clase,text width=2.45cm] (repuesto) at (16.55,4.18) {%
+\textbf{Repuesto}\\
+\rule{\linewidth}{0.25pt}\\
+-- codigo\\
+-- nombre};
+
+\node[clase,text width=2.7cm] (transaccion) at (19.45,4.18) {%
+\textbf{Transaccion}\\
+\rule{\linewidth}{0.25pt}\\
+-- consecutivo: int\\
+-- descripcion: String\\
+-- fecha: LocalDateTime\\
+-- reversa: Runnable\\
+\rule{\linewidth}{0.25pt}\\
++ deshacer()};
+
+\node[clase,text width=2.45cm] (registro) at (22.3,4.18) {%
+\textbf{RegistroAccion}\\
+\rule{\linewidth}{0.25pt}\\
+-- fecha\\
+-- categoria\\
+-- descripcion};
+
+\node[clase,text width=2.75cm,font=\fontsize{4.7}{5.8}\selectfont] (exportador) at (25.1,4.18) {%
+\textbf{ExportadorCSV}\\
+\rule{\linewidth}{0.25pt}\\
++ exportar(Lista<Solicitud>,\\
+\hspace*{0.45cm}String): int};
+
+% ========================= ESTRUCTURAS =========================
+\node[clase,text width=2.55cm] (lista) at (1.85,1.18) {%
+\textbf{Lista<T>}\\
+\rule{\linewidth}{0.25pt}\\
+-- elementos: Object[]\\
+-- tamano: int\\
+\rule{\linewidth}{0.25pt}\\
++ agregar(T)\\
++ obtener(int): T\\
++ eliminar(int): T};
+
+\node[clase,text width=2.45cm] (pila) at (5.0,1.18) {%
+\textbf{Pila<T>}\\
+\rule{\linewidth}{0.25pt}\\
+-- elementos: Object[]\\
+-- tamano: int\\
+\rule{\linewidth}{0.25pt}\\
++ empujar(T)\\
++ desempujar(): T\\
++ cima(): T};
+
+\node[clase,text width=2.45cm] (cola) at (8.1,1.18) {%
+\textbf{Cola<T>}\\
+\rule{\linewidth}{0.25pt}\\
+-- frente, fin, tamano\\
+\rule{\linewidth}{0.25pt}\\
++ encolar(T)\\
++ desencolar(): T\\
++ frente(): T};
+
+\node[clase,text width=3.6cm] (colaPrioridad) at (11.25,1.18) {%
+\textbf{ColaPrioridad<T>}\\
+\rule{\linewidth}{0.25pt}\\
+-- monticulo: Object[]\\
+-- comparador: Comparador<T>\\
+\rule{\linewidth}{0.25pt}\\
++ encolar(T)\\
++ desencolar(): T\\
++ mirar(): T};
+
+\node[clase,text width=2.7cm] (tablaHash) at (14.75,1.18) {%
+\textbf{TablaHash<K,V>}\\
+\rule{\linewidth}{0.25pt}\\
+-- cubetas:\\
+\hspace*{0.3cm}NodoHash<K,V>[]\\
+-- tamano: int\\
+\rule{\linewidth}{0.25pt}\\
++ poner(K,V)\\
++ obtener(K): V\\
++ eliminar(K): V};
+
+\node[iface,text width=2.4cm] (comparador) at (18.0,1.18) {%
+\textbf{Comparador<T>}\\
+{\fontsize{4.8}{5.6}\selectfont \textit{«interface»}}\\
+\rule{\linewidth}{0.25pt}\\
++ comparar(T,T): int};
+
+\node[clase,text width=2.6cm] (excepcion) at (21.2,1.18) {%
+\textbf{EstructuraVacia}\\
+\textbf{Excepcion}\\
+\rule{\linewidth}{0.25pt}\\
+\textit{extends RuntimeException}};
+
+\node[clase,text width=4.2cm] (nodoHash) at (25.0,1.18) {%
+\textbf{NodoHash<K,V>}\\
+{\fontsize{4.8}{5.6}\selectfont \textit{clase interna de TablaHash}}\\
+\rule{\linewidth}{0.25pt}\\
+-- clave: K \hspace{0.2cm} -- valor: V\\
+-- siguiente: NodoHash<K,V>};
+
+% ========================= RELACIONES ==========================
+\draw[dep] (paneles.west) -- node[here,above]{«implementan»} (panelModulo.east);
+\draw[rel] (ventana.east) to[bend left=8] node[here,above]{1 \quad 1..*} (paneles.south west);
+\draw[dep] (ventana.south) |- node[here,above,pos=0.25]{«usa»} (controlador.west);
+\draw[dep] (paneles.east) -- (21.0,16.35) -- (21.0,10.30) -- (controlador.east);
+\node[here,anchor=west] at (21.12,13.15) {«invoca»};
+\draw[dep] (modeloCombo.north) -- node[here,right]{«usan los paneles»} (paneles.south);
+\draw[dep] (controlador.south) -- node[here,right]{«delega operaciones»} (sistema.north);
+
+\draw[comp] (sistema.south) -- (14.5,5.98);
+\draw[black!70,semithick] (1.75,5.98) -- (25.1,5.98);
+\foreach \n in {cliente,unidad,tecnico,solicitud,maletin,repuesto,transaccion,registro,exportador}
+  \draw[black!70,semithick] (\n.north) -- (\n.north |- 0,5.98);
+
+\draw[dep] (sistema.west) -- (0.35,7.65) -- (0.35,2.40);
+\node[here,above] at (2.6,7.65) {«usa»};
+\node[here,rotate=90] at (0.35,4.75) {estructuras propias};
+
+\draw[dep] (colaPrioridad.north) .. controls (11.35,2.45) and (18.0,2.45) .. (comparador.north);
+\node[here,above] at (15.0,2.52) {«usa»};
+
+\end{tikzpicture}
